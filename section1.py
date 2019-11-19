@@ -420,15 +420,146 @@ def fix_1_5_4():
 # 1.6 Mandatory Access Control
 # 1.6.1 Configure SELinux
 # 1.6.1.1 Ensure SELinux is not disabled in bootloader configuration
-def task_1_6_1_1(fixbug=True):
+def task_1_6_1_1(fixbug=False):
 	command = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
 
-	if (re.search("selinux=0", command) and re.search("enforcing=0", command)):
-		if (fixbug == True): fix_1_5_4()
+	if (re.search("selinux[\s]+=[\s]+0", command) and re.search("enforcing[\s]+=[\s]+0", command)):
+		if (fixbug == True): fix_1_6_1_1()
 		return False
 	return True
 
 def fix_1_6_1_1():
+	# edit file /etc/default/grub
 	os.popen("update-grub")
 
-print task_1_6_1_1()
+# 1.6.1.2 Ensure the SELinux state is enforcing
+def task_1_6_1_2(fixbug=False):
+	command = os.popen('grep SELINUX=enforcing /etc/selinux/config').read()
+
+	if (re.search("SELINUX=enforcing", command)):
+		return True
+	if (fixbug == True): fix_1_6_1_2()
+	return False
+
+def fix_1_6_1_2():
+	if (not checkContentFile('SELINUX=enforcing', '/etc/selinux/config')):
+		with open('/etc/selinux/config', 'a+') as file:
+			file.write('SELINUX=enforcing')
+
+# 1.6.1.3 Ensure SELinux policy is configured
+def task_1_6_1_3(fixbug=False):
+	command = os.popen('grep SELINUXTYPE= /etc/selinux/config').read()
+
+	if (re.search("SELINUXTYPE=ubuntu", command) or re.search("SELINUXTYPE=default", command) or re.search("SELINUXTYPE=mls", command)):
+		return True
+	if (fixbug == True): fix_1_6_1_3()
+	return False
+
+def fix_1_6_1_3():
+	if (not checkContentFile('SELINUXTYPE=ubuntu', '/etc/selinux/config')):
+		with open('/etc/selinux/config', 'a+') as file:
+			file.write('SELINUXTYPE=ubuntu')
+
+# 1.6.1.4 Ensure no unconfined daemons exist
+def task_1_6_1_4(fixbug=False):
+	command = os.popen('ps -eZ | egrep "initrc" | egrep -vw "tr|ps|egrep|bash|awk" | tr \':\' \' \' | awk \'{ print $NF }\'').read()
+	
+	if (command == ''):
+		return True
+	return False
+
+# 1.6.2 Configure AppArmor
+# 1.6.2.1 Ensure AppArmor is not disabled in bootloader configuration
+def task_1_6_2_1(fixbug=False):
+	command = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
+
+	if (re.search("apparmor=0", command) and re.search("enforcing[\s]+=[\s]+0", command)):
+		if (fixbug == True): fix_1_6_2_1()
+		return False
+	return True
+
+def fix_1_6_2_1():
+	# edit file /etc/default/grub
+	os.popen("update-grub")
+
+# 1.6.2.2 Ensure all AppArmor Profiles are enforcing
+def task_1_6_2_2(fixbug=False):
+	command = os.popen('apparmor_status').read()
+
+	if (re.search("0 profiles are in complain mode", command) and re.search("0 processes are unconfined", command)):
+		return True
+	if (fixbug == True): fix_1_6_2_2()
+	return False
+
+def fix_1_6_2_2():
+	os.popen("aa-enforce /etc/apparmor.d/*")
+
+# 1.6.3 Ensure SELinux or AppArmor are installed
+def task_1_6_3(fixbug=False):
+	dpkg_selinux = os.popen("dpkg -s selinux").read()
+	dpkg_apparmor = os.popen("dpkg -s apparmor").read()
+
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_selinux) and re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_apparmor)):
+		return True
+	if (fixbug == True): fix_1_6_3()
+	return False
+
+def fix_1_6_3():
+	os.popen("apt-get install selinux -y")
+	os.popen("apt-get install apparmor -y")
+
+# 1.7 Warning Banners
+# 1.7.1 Command Line Warning Banners
+# 1.7.1.1 Ensure message of the day is configured properly
+def task_1_7_1_1(fixbug=False):
+	command_cat = os.popen('cat /etc/motd').read()
+	command_egrep = os.popen('egrep \'(\\v|\\r|\\m|\\s)\' /etc/motd').read()
+
+# 1.7.1.2 Ensure local login warning banner is configured properly
+def task_1_7_1_2(fixbug=False):
+	command_cat = os.popen('cat /etc/issue').read()
+	command_egrep = os.popen('egrep \'(\\v|\\r|\\m|\\s)\' /etc/issue').read()
+	if (command_egrep == ''):
+		return True
+	return False
+
+# 1.7.1.4 Ensure permissions on /etc/motd are configured
+def task_1_7_1_4(fixbug=False):
+	stat = os.popen('stat /etc/motd').read()
+
+	if (re.search("Access:[\s]+\(0644/-rw-r--r--\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+0/[\s]+root\)", stat)):
+		return True
+	if (fixbug == True): fix_1_7_1_4()
+	return False
+
+def fix_1_7_1_4():
+	os.popen("chown root:root /etc/motd")
+	os.popen("chmod 644 /etc/motd")
+
+# 1.7.1.5 Ensure permissions on /etc/issue are configured
+def task_1_7_1_5(fixbug=False):
+	stat = os.popen('stat /etc/issue').read()
+
+	if (re.search("Access:[\s]+\(0644/-rw-r--r--\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+0/[\s]+root\)", stat)):
+		return True
+	if (fixbug == True): fix_1_7_1_5()
+	return False
+
+def fix_1_7_1_5():
+	os.popen("chown root:root /etc/issue")
+	os.popen("chmod 644 /etc/issue")
+
+# 1.7.1.6 Ensure permissions on /etc/issue.net are configured
+def task_1_7_1_6(fixbug=False):
+	stat = os.popen('stat /etc/issue.net').read()
+
+	if (re.search("Access:[\s]+\(0644/-rw-r--r--\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+0/[\s]+root\)", stat)):
+		return True
+	if (fixbug == True): fix_1_7_1_6()
+	return False
+
+def fix_1_7_1_6():
+	os.popen("chown root:root /etc/issue.net")
+	os.popen("chmod 644 /etc/issue.net")
+
+# 1.7.2 Ensure GDM login banner is configured
