@@ -1,5 +1,9 @@
-import subprocess, os, re
+import subprocess, os, re, sys
 from crontab import CronTab
+test_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(test_path)
+
+import helper as helper
 
 #p = subprocess.Popen('modprobe -n -v cramfs', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 	#for line in p.stdout.readlines():
@@ -328,6 +332,7 @@ def fix_1_3_2():
 	job.hour.on(5)
 	cron.write()
 
+# 1.4 Secure Boot Settings
 # 1.4.1 Ensure permissions on bootloader config are configured
 def task_1_4_1(fixbug=False):
 	stat = os.popen("stat /boot/grub/grub.cfg").read()
@@ -367,24 +372,10 @@ def task_1_5_1(fixbug=False):
 	return False
 
 def fix_1_5_1():
-	if (not checkContentFile('* hard core 0', '/etc/security/limits.conf')):
-		with open('/etc/security/limits.conf', 'a+') as file:
-			file.write('* hard core 0')
-
-	if (not checkContentFile('fs.suid_dumpable = 0', '/etc/sysctl.conf')):
-		with open('/etc/sysctl.conf', 'a+') as file:
-			file.write('fs.suid_dumpable = 0')
+	helper.replaceLine('/etc/security/limits.conf', '\* hard core', '* hard core 0')
+	helper.replaceLine('/etc/sysctl.conf', 'fs.suid_dumpable =', 'fs.suid_dumpable = 0')
 
 	os.popen("sysctl -w fs.suid_dumpable=0")
-
-def checkContentFile(string, base):
-	found = False
-	with open(base, 'a+') as file:
-		lineList = file.read()
-		if (string in lineList):
-			found = True
-
-	return found
 
 # 1.5.2 Ensure XD/NX support is enabled
 # 1.5.3 Ensure address space layout randomization (ASLR) is enabled
@@ -398,10 +389,7 @@ def task_1_5_3(fixbug=False):
 	return False
 
 def fix_1_5_3():
-	if (not checkContentFile('kernel.randomize_va_space = 2', '/etc/sysctl.conf')):
-		with open('/etc/sysctl.conf', 'a+') as file:
-			file.write('kernel.randomize_va_space = 2')
-
+	helper.replaceLine('/etc/sysctl.conf', 'kernel.randomize_va_space =', 'kernel.randomize_va_space = 2')
 	os.popen("sysctl -w kernel.randomize_va_space=2")
 
 # 1.5.4 Ensure prelink is disabled
@@ -429,7 +417,8 @@ def task_1_6_1_1(fixbug=False):
 	return True
 
 def fix_1_6_1_1():
-	# edit file /etc/default/grub
+	helper.replaceLine('/etc/default/grub', 'GRUB_CMDLINE_LINUX_DEFAULT=', 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"')
+	helper.replaceLine('/etc/default/grub', 'GRUB_CMDLINE_LINUX=', 'GRUB_CMDLINE_LINUX=""')
 	os.popen("update-grub")
 
 # 1.6.1.2 Ensure the SELinux state is enforcing
@@ -442,9 +431,7 @@ def task_1_6_1_2(fixbug=False):
 	return False
 
 def fix_1_6_1_2():
-	if (not checkContentFile('SELINUX=enforcing', '/etc/selinux/config')):
-		with open('/etc/selinux/config', 'a+') as file:
-			file.write('SELINUX=enforcing')
+	helper.replaceLine('/etc/selinux/config', 'SELINUX=', 'SELINUX=enforcing')
 
 # 1.6.1.3 Ensure SELinux policy is configured
 def task_1_6_1_3(fixbug=False):
@@ -456,9 +443,7 @@ def task_1_6_1_3(fixbug=False):
 	return False
 
 def fix_1_6_1_3():
-	if (not checkContentFile('SELINUXTYPE=ubuntu', '/etc/selinux/config')):
-		with open('/etc/selinux/config', 'a+') as file:
-			file.write('SELINUXTYPE=ubuntu')
+	helper.replaceLine('/etc/selinux/config', 'SELINUXTYPE=', 'SELINUXTYPE=ubuntu')
 
 # 1.6.1.4 Ensure no unconfined daemons exist
 def task_1_6_1_4(fixbug=False):
@@ -479,7 +464,8 @@ def task_1_6_2_1(fixbug=False):
 	return True
 
 def fix_1_6_2_1():
-	# edit file /etc/default/grub
+	helper.replaceLine('/etc/default/grub', 'GRUB_CMDLINE_LINUX_DEFAULT=', 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"')
+	helper.replaceLine('/etc/default/grub', 'GRUB_CMDLINE_LINUX=', 'GRUB_CMDLINE_LINUX=""')
 	os.popen("update-grub")
 
 # 1.6.2.2 Ensure all AppArmor Profiles are enforcing
@@ -563,3 +549,18 @@ def fix_1_7_1_6():
 	os.popen("chmod 644 /etc/issue.net")
 
 # 1.7.2 Ensure GDM login banner is configured
+def task_1_7_1_6(fixbug=False):
+	dpkg = os.popen("dpkg -s gdm3").read()
+
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg)):
+		cat = os.popen('cat /etc/gdm3/greeter.dconf-defaults').read()
+		if (re.search("[org/gnome/login-screen]\nbanner-message-enable=true\nbanner-message-text='<banner message>'", cat)):
+			return True
+		if (fixbug == True): fix_1_7_1_6()
+
+		return False
+	return True
+
+def fix_1_7_1_6():
+	with open('/etc/gdm3/greeter.dconf-defaults', 'a+') as file:
+		file.write("\n[org/gnome/login-screen]\nbanner-message-enable=true\nbanner-message-text='Authorized uses only. All activity may be monitored and reported.'")

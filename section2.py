@@ -1,4 +1,8 @@
 import subprocess, os, re
+test_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(test_path)
+
+import helper as helper
 
 # 2 Services
 # 2.1 inetd Services
@@ -63,10 +67,15 @@ def task_2_2_1_2(fixbug=False):
 	check_egrep = os.popen('egrep "^(server|pool)" /etc/ntp.conf').read()
 	check_grep = os.popen('grep "RUNASUSER=ntp" /etc/init.d/ntp').read()
 
-	if (re.search("restrict -4 default kod nomodify notrap nopeer noquery", check) and re.search("restrict -6 default kod nomodify notrap nopeer noquery", check) and re.search("server <remote-server>", check_egrep) and re.search("RUNASUSER=ntp", check_grep)):
+	if (re.search("restrict -4 default kod nomodify notrap nopeer noquery", check) and re.search("restrict -6 default kod nomodify notrap nopeer noquery", check) and re.search("RUNASUSER=ntp", check_grep)):
 		return True
 	if (fixbug == True): fix_2_2_1_2()
 	return False
+
+def fix_2_2_1_2():
+	helper.replaceLine('/etc/ntp.conf', '^restrict -4', 'restrict -4 default kod nomodify notrap nopeer noquery')
+	helper.replaceLine('/etc/ntp.conf', '^restrict -6', 'restrict -6 default kod nomodify notrap nopeer noquery')
+	helper.replaceLine('/etc/init.d/ntp', 'RUNASUSER=', 'RUNASUSER=ntp')
 
 # 2.2.1.3 Ensure chrony is configured
 def task_2_2_1_3(fixbug=False):
