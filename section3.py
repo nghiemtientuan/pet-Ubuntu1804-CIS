@@ -1,4 +1,8 @@
 import subprocess, os, re
+test_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(test_path)
+
+import helper as helper
 
 # 3 Network Configuration
 # 3.1 Network Parameters (Host Only)
@@ -7,15 +11,113 @@ def task_3_1_1(fixbug=False):
 	check = os.popen('sysctl net.ipv4.ip_forward').read()
 	check2 = os.popen('grep "net\.ipv4\.ip_forward" /etc/sysctl.conf /etc/sysctl.d/*').read()
 
-	if (check == 'net.ipv4.ip_forward[\s]+=[\s]+0' and re.search("net.ipv4.ip_forward[\s]+=[\s]+0", check2)):
+	if (check == 'net.ipv4.ip_forward = 0' and re.search("net.ipv4.ip_forward = 0", check2)):
 		return True
 	if (fixbug == True): fix_3_1_1()
 	return False
 
 def fix_3_1_1():
-	# Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file:
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.ip_forward', 'net.ipv4.ip_forward = 0')
 	os.popen("sysctl -w net.ipv4.ip_forward=0")
 	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.1.2 Ensure packet redirect sending is disabled
+def task_3_1_2(fixbug=False):
+	check = os.popen('sysctl net.ipv4.conf.all.send_redirects').read()
+	check2 = os.popen('sysctl net.ipv4.conf.default.send_redirects').read()
+	check3 = os.popen('grep "net\.ipv4\.conf\.all\.send_redirects" /etc/sysctl.conf/etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv4\.conf\.default\.send_redirects" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.conf.all.send_redirects = 0' and check2 == 'net.ipv4.conf.default.send_redirects = 0' and check3 == 'net.ipv4.conf.all.send_redirects = 0' and check4 == 'net.ipv4.conf.default.send_redirects = 0'):
+		return True
+	if (fixbug == True): fix_3_1_2()
+	return False
+
+def fix_3_1_2():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.all\.send_redirects', 'net.ipv4.conf.all.send_redirects = 0')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.default\.send_redirects', 'net.ipv4.conf.default.send_redirects = 0')
+	os.popen("sysctl -w net.ipv4.conf.all.send_redirects=0")
+	os.popen("sysctl -w net.ipv4.conf.default.send_redirects=0")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2 Network Parameters
+# 3.2.1 Ensure source routed packets are not accepted
+def task_3_2_1(fixbug=False):
+	check = os.popen('sysctl net.ipv4.conf.all.accept_source_route').read()
+	check2 = os.popen('sysctl net.ipv4.conf.default.accept_source_route').read()
+	check3 = os.popen('grep "net\.ipv4\.conf\.all\.accept_source_route" /etc/sysctl.conf/etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv4\.conf\.default\.accept_source_route" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.conf.all.accept_source_route = 0' and check2 == 'net.ipv4.conf.default.accept_source_route = 0' and check3 == 'net.ipv4.conf.all.accept_source_route = 0' and check4 == 'net.ipv4.conf.default.accept_source_route = 0'):
+		return True
+	if (fixbug == True): fix_3_2_1()
+	return False
+
+def fix_3_2_1():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.all\.accept_source_route', 'net.ipv4.conf.all.accept_source_route = 0')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.default\.accept_source_route', 'net.ipv4.conf.default.accept_source_route = 0')
+	os.popen("sysctl -w net.ipv4.conf.all.accept_source_route=0")
+	os.popen("sysctl -w net.ipv4.conf.default.accept_source_route=0")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.2 Ensure ICMP redirects are not accepted
+def task_3_2_2(fixbug=False):
+	check = os.popen('sysctl net.ipv4.conf.all.accept_redirects').read()
+	check2 = os.popen('sysctl net.ipv4.conf.default.accept_redirects').read()
+	check3 = os.popen('grep "net\.ipv4\.conf\.all\.accept_redirects" /etc/sysctl.conf/etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv4\.conf\.default\.accept_redirects" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.conf.all.accept_redirects = 0' and check2 == 'net.ipv4.conf.default.accept_redirects = 0' and check3 == 'net.ipv4.conf.all.accept_redirects = 0' and check4 == 'net.ipv4.conf.default.accept_redirects = 0'):
+		return True
+	if (fixbug == True): fix_3_2_2()
+	return False
+
+def fix_3_2_2():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.all\.accept_redirects', 'net.ipv4.conf.all.accept_redirects = 0')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.default\.accept_redirects', 'net.ipv4.conf.default.accept_redirects = 0')
+	os.popen("sysctl -w net.ipv4.conf.all.accept_redirects=0")
+	os.popen("sysctl -w net.ipv4.conf.default.accept_redirects=0")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.3 Ensure secure ICMP redirects are not accepted
+def task_3_2_3(fixbug=False):
+	check = os.popen('sysctl net.ipv4.conf.all.secure_redirects').read()
+	check2 = os.popen('sysctl net.ipv4.conf.default.secure_redirects').read()
+	check3 = os.popen('grep "net\.ipv4\.conf\.all\.secure_redirects" /etc/sysctl.conf/etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv4\.conf\.default\.secure_redirects" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.conf.all.secure_redirects = 0' and check2 == 'net.ipv4.conf.default.secure_redirects = 0' and check3 == 'net.ipv4.conf.all.secure_redirects = 0' and check4 == 'net.ipv4.conf.default.secure_redirects = 0'):
+		return True
+	if (fixbug == True): fix_3_2_3()
+	return False
+
+def fix_3_2_3():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.all\.secure_redirects', 'net.ipv4.conf.all.secure_redirects = 0')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.default\.secure_redirects', 'net.ipv4.conf.default.secure_redirects = 0')
+	os.popen("sysctl -w net.ipv4.conf.all.secure_redirects=0")
+	os.popen("sysctl -w net.ipv4.conf.default.secure_redirects=0")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.4 Ensure suspicious packets are logged
+def task_3_2_4(fixbug=False):
+	check = os.popen('sysctl net.ipv4.conf.all.log_martians').read()
+	check2 = os.popen('sysctl net.ipv4.conf.default.log_martians').read()
+	check3 = os.popen('grep "net\.ipv4\.conf\.all\.log_martians" /etc/sysctl.conf /etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv4\.conf\.default\.log_martians" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.conf.all.log_martians = 1' and check2 == 'net.ipv4.conf.default.log_martians = 1' and check3 == 'net.ipv4.conf.all.log_martians = 1' and check4 == 'net.ipv4.conf.default.log_martians = 1'):
+		return True
+	if (fixbug == True): fix_3_2_4()
+	return False
+
+def fix_3_2_4():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.all\.log_martians', 'net.ipv4.conf.all.log_martians = 1')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.default\.log_martians', 'net.ipv4.conf.default.log_martians = 1')
+	os.popen("sysctl -w net.ipv4.conf.all.log_martians=1")
+	os.popen("sysctl -w net.ipv4.conf.default.log_martians=1")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.5 Ensure broadcast ICMP requests are ignored
 
 # 3.4 TCP Wrappers
 # 3.4.1 Ensure TCP Wrappers is installed
