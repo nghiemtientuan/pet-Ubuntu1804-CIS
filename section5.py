@@ -1,4 +1,8 @@
 import subprocess, os, re
+test_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(test_path)
+
+import helper as helper
 
 # 5 Access, Authentication and Authorization
 # 5.1 Configure cron
@@ -120,7 +124,7 @@ def check_SSH_daemon_installed():
 
 	if (re.search("/etc/ssh/sshd_config", check)):
 		return True
-	return False
+	rehelper.replaceLine('/etc/audit/auditd.conf', 'space_left_action', 'space_left_action = email')turn False
 
 # 5.2.1 Ensure permissions on /etc/ssh/sshd_config are configured
 def task_5_2_1(fixbug=False):
@@ -144,7 +148,121 @@ def task_5_2_2(fixbug=False):
 
 		if (check == 'Protocol 2'):
 			return True
+		if(fixbug == True): fix_5_2_2()
 		return False
 	return True
 
-# 
+def fix_5_2_2():
+	helper.replaceLine('/etc/ssh/sshd_config', '^Protocol', 'Protocol 2')
+
+# 5.2.3 Ensure SSH LogLevel is set to INFO
+def task_5_2_3(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^LogLevel" /etc/ssh/sshd_config').read()
+
+		if (check == 'LogLevel INFO'):
+			return True
+		if(fixbug == True): fix_5_2_3()
+		return False
+	return True
+
+def fix_5_2_3():
+	helper.replaceLine('/etc/ssh/sshd_config', '^LogLevel', 'LogLevel INFO')
+
+# 5.2.4 Ensure SSH X11 forwarding is disabled
+def task_5_2_4(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^X11Forwarding" /etc/ssh/sshd_config').read()
+
+		if (check == 'X11Forwarding no'):
+			return True
+		if(fixbug == True): fix_5_2_4()
+		return False
+	return True
+
+def fix_5_2_4():
+	helper.replaceLine('/etc/ssh/sshd_config', '^X11Forwarding', 'X11Forwarding no')
+
+# 5.2.5 Ensure SSH MaxAuthTries is set to 4 or less
+def task_5_2_5(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^MaxAuthTries" /etc/ssh/sshd_config').read()
+
+		if (check == 'MaxAuthTries 4'):
+			return True
+		if(fixbug == True): fix_5_2_5()
+		return False
+	return True
+
+def fix_5_2_5():
+	helper.replaceLine('/etc/ssh/sshd_config', '^MaxAuthTries', 'MaxAuthTries 4')
+
+# 5.2.6 Ensure SSH IgnoreRhosts is enabled
+def task_5_2_6(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^IgnoreRhosts" /etc/ssh/sshd_config').read()
+
+		if (check == 'IgnoreRhosts yes'):
+			return True
+		if(fixbug == True): fix_5_2_6()
+		return False
+	return True
+
+def fix_5_2_6():
+	helper.replaceLine('/etc/ssh/sshd_config', '^IgnoreRhosts', 'IgnoreRhosts yes')
+
+# 5.2.7 Ensure SSH HostbasedAuthentication is disabled
+def task_5_2_7(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^HostbasedAuthentication" /etc/ssh/sshd_config').read()
+
+		if (check == 'HostbasedAuthentication no'):
+			return True
+		if(fixbug == True): fix_5_2_7()
+		return False
+	return True
+
+def fix_5_2_7():
+	helper.replaceLine('/etc/ssh/sshd_config', '^HostbasedAuthentication', 'HostbasedAuthentication no')
+
+# 5.2.8 Ensure SSH root login is disabled
+def task_5_2_8(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^PermitRootLogin" /etc/ssh/sshd_config').read()
+
+		if (check == 'PermitRootLogin no'):
+			return True
+		if(fixbug == True): fix_5_2_8()
+		return False
+	return True
+
+def fix_5_2_8():
+	helper.replaceLine('/etc/ssh/sshd_config', '^PermitRootLogin', 'PermitRootLogin no')
+
+# 5.2.9 Ensure SSH PermitEmptyPasswords is disabled
+def task_5_2_9(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^PermitEmptyPasswords" /etc/ssh/sshd_config').read()
+
+		if (check == 'PermitEmptyPasswords no'):
+			return True
+		if(fixbug == True): fix_5_2_9()
+		return False
+	return True
+
+def fix_5_2_9():
+	helper.replaceLine('/etc/ssh/sshd_config', '^PermitEmptyPasswords', 'PermitEmptyPasswords no')
+
+# 5.2.10 Ensure SSH PermitUserEnvironment is disabled
+def task_5_2_10(fixbug=False):
+	if (check_SSH_daemon_installed):
+		check = os.popen('grep "^PermitUserEnvironment" /etc/ssh/sshd_config').read()
+
+		if (check == 'PermitUserEnvironment no'):
+			return True
+		if(fixbug == True): fix_5_2_10()
+		return False
+	return True
+
+def fix_5_2_10():
+	helper.replaceLine('/etc/ssh/sshd_config', '^PermitUserEnvironment', 'PermitUserEnvironment no')
