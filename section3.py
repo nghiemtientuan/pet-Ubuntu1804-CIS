@@ -118,6 +118,108 @@ def fix_3_2_4():
 	os.popen("sysctl -w net.ipv4.route.flush=1")
 
 # 3.2.5 Ensure broadcast ICMP requests are ignored
+def task_3_2_5(fixbug=False):
+	check = os.popen('sysctl net.ipv4.icmp_echo_ignore_broadcasts').read()
+	check2 = os.popen('grep "net\.ipv4\.icmp_echo_ignore_broadcasts" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.icmp_echo_ignore_broadcasts = 1' and check2 == 'net.ipv4.icmp_echo_ignore_broadcasts = 1'):
+		return True
+	if (fixbug == True): fix_3_2_5()
+	return False
+
+def fix_3_2_5():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.icmp_echo_ignore_broadcasts', 'net.ipv4.icmp_echo_ignore_broadcasts = 1')
+	os.popen("sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.6 Ensure bogus ICMP responses are ignored
+def task_3_2_6(fixbug=False):
+	check = os.popen('sysctl net.ipv4.icmp_ignore_bogus_error_responses').read()
+	check2 = os.popen('grep "net\.ipv4\.icmp_ignore_bogus_error_responses" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.icmp_ignore_bogus_error_responses = 1' and check2 == 'net.ipv4.icmp_ignore_bogus_error_responses = 1'):
+		return True
+	if (fixbug == True): fix_3_2_6()
+	return False
+
+def fix_3_2_6():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.icmp_ignore_bogus_error_responses', 'net.ipv4.icmp_ignore_bogus_error_responses = 1')
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.7 Ensure Reverse Path Filtering is enabled
+def task_3_2_7(fixbug=False):
+	check = os.popen('sysctl net.ipv4.conf.all.rp_filter').read()
+	check2 = os.popen('sysctl net.ipv4.conf.default.rp_filter').read()
+	check3 = os.popen('grep "net\.ipv4\.conf\.all\.rp_filter" /etc/sysctl.conf /etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv4\.conf\.default\.rp_filter" /etc/sysctl.conf /etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.conf.all.rp_filter = 1' and check2 == 'net.ipv4.conf.default.rp_filter = 1' and check3 == 'net.ipv4.conf.all.rp_filter = 1' and check4 == 'net.ipv4.conf.default.rp_filter = 1'):
+		return True
+	if (fixbug == True): fix_3_2_7()
+	return False
+
+def fix_3_2_7():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.all\.rp_filter', 'net.ipv4.conf.all.rp_filter = 1')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.conf\.default\.rp_filter', 'net.ipv4.conf.default.rp_filter = 1')
+	os.popen("sysctl -w net.ipv4.conf.all.rp_filter=1")
+	os.popen("sysctl -w net.ipv4.conf.default.rp_filter=1")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.2.8 Ensure TCP SYN Cookies is enabled
+def task_3_2_8(fixbug=False):
+	check = os.popen('sysctl net.ipv4.tcp_syncookies').read()
+	check = os.popen('grep "net\.ipv4\.tcp_syncookies" /etc/sysctl.conf /etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv4.tcp_syncookies = 1' and check2 == 'net.ipv4.tcp_syncookies = 1'):
+		return True
+	if (fixbug == True): fix_3_2_8()
+	return False
+
+def fix_3_2_8():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv4\.tcp_syncookies', 'net.ipv4.tcp_syncookies = 1')
+	os.popen("sysctl -w net.ipv4.tcp_syncookies=1")
+	os.popen("sysctl -w net.ipv4.route.flush=1")
+
+# 3.3 IPv6
+# 3.3.1 Ensure IPv6 router advertisements are not accepted
+def task_3_3_1(fixbug=False):
+	check = os.popen('sysctl net.ipv6.conf.all.accept_ra').read()
+	check2 = os.popen('sysctl net.ipv6.conf.default.accept_ra').read()
+	check3 = os.popen('grep "net\.ipv6\.conf\.all\.accept_ra" /etc/sysctl.conf /etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv6\.conf\.default\.accept_ra" /etc/sysctl.conf /etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv6.conf.all.accept_ra = 0' and check2 == 'net.ipv6.conf.default.accept_ra = 0' and check3 == 'net.ipv6.conf.all.accept_ra = 0' and check4 == 'net.ipv6.conf.default.accept_ra = 0'):
+		return True
+	if (fixbug == True): fix_3_3_1()
+	return False
+
+def fix_3_3_1():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv6\.conf\.all\.accept_ra', 'net.ipv6.conf.all.accept_ra = 0')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv6\.conf\.default\.accept_ra', 'net.ipv6.conf.default.accept_ra = 0')
+	os.popen("sysctl -w net.ipv6.conf.all.accept_ra=0")
+	os.popen("sysctl -w net.ipv6.conf.default.accept_ra=0")
+	os.popen("sysctl -w net.ipv6.route.flush=1")
+
+# 3.3.2 Ensure IPv6 redirects are not accepted
+def task_3_3_2(fixbug=False):
+	check = os.popen('sysctl net.ipv6.conf.all.accept_redirects').read()
+	check2 = os.popen('sysctl net.ipv6.conf.default.accept_redirects').read()
+	check3 = os.popen('grep "net\.ipv6\.conf\.all\.accept_redirect" /etc/sysctl.conf/etc/sysctl.d/*').read()
+	check4 = os.popen('grep "net\.ipv6\.conf\.default\.accept_redirect" /etc/sysctl.conf/etc/sysctl.d/*').read()
+
+	if (check == 'net.ipv6.conf.all.accept_redirect = 0' and check2 == 'net.ipv6.conf.default.accept_redirect = 0' and check3 == 'net.ipv6.conf.all.accept_redirect = 0' and check4 == 'net.ipv6.conf.default.accept_redirect = 0'):
+		return True
+	if (fixbug == True): fix_3_3_2()
+	return False
+
+def fix_3_3_2():
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv6\.conf\.all\.accept_redirect', 'net.ipv6.conf.all.accept_redirects = 0')
+	helper.replaceLine('/etc/sysctl.conf', 'net\.ipv6\.conf\.default\.accept_redirect', 'net.ipv6.conf.default.accept_redirects = 0')
+	os.popen("sysctl -w net.ipv6.conf.all.accept_redirects=0")
+	os.popen("sysctl -w net.ipv6.conf.default.accept_redirects=0")
+	os.popen("sysctl -w net.ipv6.route.flush=1")
+
+# 3.3.3 Ensure IPv6 is disabled
 
 # 3.4 TCP Wrappers
 # 3.4.1 Ensure TCP Wrappers is installed
