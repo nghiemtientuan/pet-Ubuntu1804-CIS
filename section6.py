@@ -1,4 +1,8 @@
-import subprocess, os, re
+import subprocess, os, re, sys
+test_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(test_path)
+
+import helper as helper
 
 # 6 System Maintenance
 # 6.1 System File Permissions

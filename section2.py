@@ -1,4 +1,4 @@
-import subprocess, os, re
+import subprocess, os, re, sys
 test_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(test_path)
 
@@ -8,18 +8,116 @@ import helper as helper
 # 2.1 inetd Services
 # 2.1.1 Ensure chargen services are not enabled
 def task_2_1_1(fixbug=False):
-	check_install = os.popen('dpkg -s chargen').read()
+	grep = os.popen('grep -R "^chargen" /etc/xinetd.*').read()
 
-	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", check_install)):
-		grep = os.popen('grep -R "^chargen" /etc/inetd.*').read()
-		file = os.popen('cat /etc/xinetd.conf').read()
-
-		if (grep == '' and re.search("disable = yes", file)):
-			return True
-		#if (fixbug == True): fix_2_1_1()
-		return False
-	else:
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'chargen')):
 		return True
+	if (fixbug == True): fix_2_1_1()
+	return False
+
+def fix_2_1_1():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'chargen')
+
+# 2.1.2 Ensure daytime services are not enabled
+def task_2_1_2(fixbug=False):
+	grep = os.popen('grep -R "^daytime" /etc/xinetd.*').read()
+
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'daytime')):
+		return True
+	if (fixbug == True): fix_2_1_2()
+	return False
+
+def fix_2_1_2():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'daytime')
+
+# 2.1.3 Ensure discard services are not enabled
+def task_2_1_3(fixbug=False):
+	grep = os.popen('grep -R "^discard" /etc/xinetd.*').read()
+
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'discard')):
+		return True
+	if (fixbug == True): fix_2_1_3()
+	return False
+
+def fix_2_1_3():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'discard')
+
+# 2.1.4 Ensure echo services are not enabled
+def task_2_1_4(fixbug=False):
+	grep = os.popen('grep -R "^echo" /etc/xinetd.*').read()
+
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'echo')):
+		return True
+	if (fixbug == True): fix_2_1_4()
+	return False
+
+def fix_2_1_4():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'echo')
+
+# 2.1.5 Ensure time services are not enabled
+def task_2_1_5(fixbug=False):
+	grep = os.popen('grep -R "^time" /etc/xinetd.*').read()
+
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'time')):
+		return True
+	if (fixbug == True): fix_2_1_5()
+	return False
+
+def fix_2_1_5():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'time')
+
+# 2.1.6 Ensure rsh server is not enabled
+def task_2_1_6(fixbug=False):
+	grep = os.popen('grep -R "^shell" /etc/xinetd.*').read()
+	grep2 = os.popen('grep -R "^login" /etc/xinetd.*').read()
+	grep3 = os.popen('grep -R "^exec" /etc/xinetd.*').read()
+
+	if (grep == '' and grep2 =='' and grep3 =='' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'rsh') and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'rlogin') and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'rexec')):
+		return True
+	if (fixbug == True): fix_2_1_6()
+	return False
+
+def fix_2_1_6():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'rsh')
+	helper.disableServiceInFolder('/etc/xinetd.d', 'rlogin')
+	helper.disableServiceInFolder('/etc/xinetd.d', 'rexec')
+
+# 2.1.7 Ensure talk server is not enabled
+def task_2_1_7(fixbug=False):
+	grep = os.popen('grep -R "^talk" /etc/xinetd.*').read()
+	grep2 = os.popen('grep -R "^ntalk" /etc/xinetd.*').read()
+
+	if (grep == '' and grep2 == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'talk')):
+		return True
+	if (fixbug == True): fix_2_1_7()
+	return False
+
+def fix_2_1_7():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'talk')
+
+# 2.1.8 Ensure telnet server is not enabled
+def task_2_1_8(fixbug=False):
+	grep = os.popen('grep -R "^telnet" /etc/xinetd.*').read()
+
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'telnet')):
+		return True
+	if (fixbug == True): fix_2_1_8()
+	return False
+
+def fix_2_1_8():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'telnet')
+
+# 2.1.9 Ensure tftp server is not enabled
+def task_2_1_9(fixbug=False):
+	grep = os.popen('grep -R "^tftp" /etc/xinetd.*').read()
+
+	if (grep == '' and helper.checkDisableServiceInFolder('/etc/xinetd.d', 'tftp')):
+		return True
+	if (fixbug == True): fix_2_1_9()
+	return False
+
+def fix_2_1_9():
+	helper.disableServiceInFolder('/etc/xinetd.d', 'tftp')
 
 # 2.1.10 Ensure xinetd is not enabled
 def task_2_1_10(fixbug=False):
@@ -67,7 +165,7 @@ def task_2_2_1_2(fixbug=False):
 	check_egrep = os.popen('egrep "^(server|pool)" /etc/ntp.conf').read()
 	check_grep = os.popen('grep "RUNASUSER=ntp" /etc/init.d/ntp').read()
 
-	if (re.search("restrict -4 default kod nomodify notrap nopeer noquery", check) and re.search("restrict -6 default kod nomodify notrap nopeer noquery", check) and re.search("RUNASUSER=ntp", check_grep)):
+	if (re.search("restrict -4 default kod nomodify notrap nopeer noquery", check) and re.search("restrict -6 default kod nomodify notrap nopeer noquery", check) and re.search("RUNASUSER=ntp", check_grep) and not (check_egrep == '')):
 		return True
 	if (fixbug == True): fix_2_2_1_2()
 	return False
@@ -77,14 +175,37 @@ def fix_2_2_1_2():
 	helper.replaceLine('/etc/ntp.conf', '^restrict -6', 'restrict -6 default kod nomodify notrap nopeer noquery')
 	helper.replaceLine('/etc/init.d/ntp', 'RUNASUSER=', 'RUNASUSER=ntp')
 
+	check_egrep = os.popen('egrep "^(server|pool)" /etc/ntp.conf').read()
+	if (check_egrep == ''):
+		with open('/etc/ntp.conf', 'a+') as file:
+			file.writelines('\npool 0.ubuntu.pool.ntp.org iburst')
+			file.writelines('\npool 1.ubuntu.pool.ntp.org iburst')
+			file.writelines('\npool 2.ubuntu.pool.ntp.org iburst')
+			file.writelines('\npool 3.ubuntu.pool.ntp.org iburst')
+			file.writelines('\npool ntp.ubuntu.com')
+
 # 2.2.1.3 Ensure chrony is configured
 def task_2_2_1_3(fixbug=False):
-	check_grep = os.popen('grep "^(server|pool)" /etc/chrony/chrony.conf').read()
+	dpkg = os.popen("dpkg -s chrony").read()
 
-	if (re.search("server <remote-server>", check_grep)):
-		return True
-	if (fixbug == True): fix_2_2_1_2()
-	return False
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg)):
+		check_grep = os.popen('grep "^(server|pool)" /etc/chrony/chrony.conf').read()
+
+		if (not (check_grep == '')):
+			return True
+		if (fixbug == True): fix_2_2_1_3()
+
+		return False
+
+	return True
+
+def fix_2_2_1_3():
+	with open('/etc/chrony/chrony.conf', 'a+') as file:
+		file.writelines('\npool 0.ubuntu.pool.ntp.org iburst')
+		file.writelines('\npool 1.ubuntu.pool.ntp.org iburst')
+		file.writelines('\npool 2.ubuntu.pool.ntp.org iburst')
+		file.writelines('\npool 3.ubuntu.pool.ntp.org iburst')
+		file.writelines('\npool ntp.ubuntu.com')
 
 # 2.2.2 Ensure X Window System is not installed
 def task_2_2_2(fixbug=False):
@@ -247,6 +368,23 @@ def fix_2_2_14():
 	os.popen("systemctl disable snmpd")
 
 # 2.2.15 Ensure mail transfer agent is configured for local-only mode
+def task_2_2_15(fixbug=False):
+	netstat = subprocess.Popen('netstat -an | grep LIST | grep ":25[[:space:]]"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+	for line in netstat.stdout.readlines():
+		listString = line.split(' ')
+		for string in listString:
+			if (re.search(":25", string) and (string != '127.0.0.1:25' and string != '::1:25')):
+				if (fixbug == True): fix_2_2_15()
+
+				return False
+
+	return True
+
+def fix_2_2_15():
+	helper.replaceLine('/etc/postfix/main.cf', 'inet_interfaces', 'inet_interfaces = loopback-only')
+	os.popen("systemctl restart postfix")
+
 # 2.2.16 Ensure rsync service is not enabled
 def task_2_2_16(fixbug=False):
 	check = os.popen("systemctl is-enabled rsync").read()

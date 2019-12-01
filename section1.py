@@ -278,22 +278,66 @@ def task_1_1_16(fixbug=False):
 	if (re.search("noexec", mount_dev_shm)):
 		return True
 	if (fixbug == True): fix_1_1_16()
+
 	return False
 
 def fix_1_1_16():
 	os.popen("sudo mount -o remount,noexec /dev/shm")
 
 # 1.1.17 Ensure nodev option set on removable media partitions
+def task_1_1_17(fixbug=False):
+	check = helper.checkMountOptionSet('nodev')
+	if (check == False):
+		if (fixbug == True):
+			helper.mountOptionSet('nodev')
+
+		return False
+
+
+	return True
+
 # 1.1.18 Ensure nosuid option set on removable media partitions
+def task_1_1_18(fixbug=False):
+	check = helper.checkMountOptionSet('nosuid')
+	if (check == False):
+		if (fixbug == True):
+			helper.mountOptionSet('nosuid')
+
+		return False
+
+
+	return True
+
 # 1.1.19 Ensure noexec option set on removable media partitions
+def task_1_1_19(fixbug=False):
+	check = helper.checkMountOptionSet('noexec')
+	if (check == False):
+		if (fixbug == True):
+			helper.mountOptionSet('noexec')
+
+		return False
+
+
+	return True
+
 # 1.1.20 Ensure sticky bit is set on all world-writable directories
+def task_1_1_20(fixbug=False):
+	check = os.popen("df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null").read()
+
+	if (check == ''):
+		return True
+	if (fixbug == True): fix_1_1_20()			
+	return False
+
+def fix_1_1_20():
+	os.popen("df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d -perm -0002 2>/dev/null | xargs chmod a+t")
 
 # 1.1.21 Disable Automounting
 def task_1_1_21(fixbug=False):
 	disable_automounting = os.popen("systemctl is-enabled autofs").read()
 
 	if (re.search("enabled", disable_automounting)):
-		if(fixbug == True): fix_1_1_21()			
+		if (fixbug == True): fix_1_1_21()			
 		return False
 	return True
 
@@ -498,16 +542,49 @@ def fix_1_6_3():
 # 1.7.1 Command Line Warning Banners
 # 1.7.1.1 Ensure message of the day is configured properly
 def task_1_7_1_1(fixbug=False):
-	command_cat = os.popen('cat /etc/motd').read()
 	command_egrep = os.popen('egrep \'(\\v|\\r|\\m|\\s)\' /etc/motd').read()
+
+	if (command_egrep == ''):
+		return True
+	if (fixbug == True): fix_1_7_1_1()
+	return False
+
+def fix_1_7_1_1():
+	helper.removeStringInLine('/etc/motd', '\\m')
+	helper.removeStringInLine('/etc/motd', '\\r')
+	helper.removeStringInLine('/etc/motd', '\\s')
+	helper.removeStringInLine('/etc/motd', '\\v')
+
 
 # 1.7.1.2 Ensure local login warning banner is configured properly
 def task_1_7_1_2(fixbug=False):
-	command_cat = os.popen('cat /etc/issue').read()
 	command_egrep = os.popen('egrep \'(\\v|\\r|\\m|\\s)\' /etc/issue').read()
+
 	if (command_egrep == ''):
 		return True
+	if (fixbug == True): fix_1_7_1_2()
 	return False
+
+def fix_1_7_1_2():
+	helper.removeStringInLine('/etc/issue', '\\m')
+	helper.removeStringInLine('/etc/issue', '\\r')
+	helper.removeStringInLine('/etc/issue', '\\s')
+	helper.removeStringInLine('/etc/issue', '\\v')
+
+# 1.7.1.3 Ensure remote login warning banner is configured properly
+def task_1_7_1_3(fixbug=False):
+	command_egrep = os.popen('egrep \'(\\v|\\r|\\m|\\s)\' /etc/issue.net').read()
+
+	if (command_egrep == ''):
+		return True
+	if (fixbug == True): fix_1_7_1_3()
+	return False
+
+def fix_1_7_1_3():
+	helper.removeStringInLine('/etc/issue.net', '\\m')
+	helper.removeStringInLine('/etc/issue.net', '\\r')
+	helper.removeStringInLine('/etc/issue.net', '\\s')
+	helper.removeStringInLine('/etc/issue.net', '\\v')
 
 # 1.7.1.4 Ensure permissions on /etc/motd are configured
 def task_1_7_1_4(fixbug=False):
@@ -549,18 +626,22 @@ def fix_1_7_1_6():
 	os.popen("chmod 644 /etc/issue.net")
 
 # 1.7.2 Ensure GDM login banner is configured
-def task_1_7_1_6(fixbug=False):
+def task_1_7_2(fixbug=False):
 	dpkg = os.popen("dpkg -s gdm3").read()
 
 	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg)):
-		cat = os.popen('cat /etc/gdm3/greeter.dconf-defaults').read()
-		if (re.search("[org/gnome/login-screen]\nbanner-message-enable=true\nbanner-message-text='<banner message>'", cat)):
+		check = os.popen('grep banner-message-enable /etc/gdm3/greeter.dconf-defaults').read()
+
+		if (check == 'banner-message-enable=true'):
 			return True
-		if (fixbug == True): fix_1_7_1_6()
+		if (fixbug == True): fix_1_7_2()
 
 		return False
 	return True
 
-def fix_1_7_1_6():
-	with open('/etc/gdm3/greeter.dconf-defaults', 'a+') as file:
-		file.write("\n[org/gnome/login-screen]\nbanner-message-enable=true\nbanner-message-text='Authorized uses only. All activity may be monitored and reported.'")
+def fix_1_7_2():
+	helper.replaceLine('/etc/gdm3/greeter.dconf-defaults', 'banner-message-enable=', 'banner-message-enable=true')
+
+	check = os.popen('grep banner-message-text /etc/gdm3/greeter.dconf-defaults').read()
+	if (check == '' and not re.search("^[^#]?banner-message-text", check)):
+		helper.replaceLine('/etc/gdm3/greeter.dconf-defaults', 'banner-message-text=', "banner-message-text='Authorized uses only. All activity may be monitored and reported.'")
