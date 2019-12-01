@@ -220,6 +220,21 @@ def fix_3_3_2():
 	os.popen("sysctl -w net.ipv6.route.flush=1")
 
 # 3.3.3 Ensure IPv6 is disabled
+def task_3_3_3(fixbug=False):
+	uuid, after = os.popen('findmnt / -o UUID -n').read().split('\n')
+	check_grep = subprocess.Popen('grep "^\s*linux" /boot/grub/grub.cfg', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+	for line in check_grep.stdout.readlines():
+		if (uuid in line and not re.search("ipv6.disable=1", line)):
+			if (fixbug == True): fix_3_3_3()
+
+			return False
+
+	return True
+
+def fix_3_3_3():
+	helper.replaceLine('/etc/default/grub', 'GRUB_CMDLINE_LINUX', 'GRUB_CMDLINE_LINUX="ipv6.disable=1"')
+	os.popen("update-grub")
 
 # 3.4 TCP Wrappers
 # 3.4.1 Ensure TCP Wrappers is installed
@@ -369,3 +384,39 @@ def fix_3_6_2():
 	os.popen("iptables -P FORWARD DROP")
 
 # 3.6.3 Ensure loopback traffic is configured
+def task_3_6_3(fixbug=False):
+	checkInputAccept = False
+	checkOutputAccept = False
+	checkInputDrop = False
+	checkIptables = subprocess.Popen('iptables -L INPUT -v -n', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	checkIptables2 = subprocess.Popen('iptables -L OUTPUT -v -n', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+	for key, line in enumerate(checkIptables.stdout.readlines()):
+		if (key > 1):
+			if (re.search("ACCEPT[\s]+all[\s]+--[\s]+lo[\s]+\*[\s]+0.0.0.0/0[\s]+0.0.0.0/0", line)):
+				checkInputAccept = True
+			elif (re.search("DROP[\s]+all[\s]+--[\s]+\*[\s]+\*[\s]+127.0.0.0/8[\s]+0.0.0.0/0", line)):
+				checkInputDrop = True
+
+	for key, line in enumerate(checkIptables2.stdout.readlines()):
+		if (key > 1):
+			if (re.search("ACCEPT[\s]+all[\s]+--[\s]+lo[\s]+\*[\s]+0.0.0.0/0[\s]+0.0.0.0/0", line)):
+				checkOutputAccept = True
+
+	if (not checkInputAccept):
+		if (fixbug == True): os.popen("iptables -A INPUT -i lo -j ACCEPT")
+
+		return False
+	elif (not checkOutputAccept):
+		if (fixbug == True): os.popen("iptables -A OUTPUT -o lo -j ACCEPT")
+
+		return False
+	elif (not checkInputDrop):
+		if (fixbug == True): os.popen("iptables -A INPUT -s 127.0.0.0/8 -j DROP")
+
+		return False
+	else:
+		return True
+
+# 3.6.4 Ensure outbound and established connections are configured
+# 3.6.5 Ensure firewall rules exist for all open ports
