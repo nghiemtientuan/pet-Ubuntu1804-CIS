@@ -418,8 +418,11 @@ def task_5_4_4(fixbug=False):
 
 	if (check == 'umask 027' and check2 == 'umask 027'):
 		return True
-	#if(fixbug == True): fix_5_4_4()
+	if(fixbug == True): fix_5_4_4()
 	return False
+
+def fix_5_4_4():
+	helper.replaceLine('/etc/bash.bashrc', 'umask', 'umask 027')
 
 # 5.4.5 Ensure default user shell timeout is 900 seconds or less
 def task_5_4_5(fixbug=False):
@@ -428,8 +431,11 @@ def task_5_4_5(fixbug=False):
 
 	if (check == 'TMOUT=600' and check2 == 'TMOUT=600'):
 		return True
-	#if(fixbug == True): fix_5_4_5()
+	if(fixbug == True): fix_5_4_5()
 	return False
+
+def fix_5_4_5():
+	helper.replaceLine('/etc/bash.bashrc', 'TMOUT', 'TMOUT=600')
 
 # 5.5 Ensure root login is restricted to system console
 # 5.6 Ensure access to the su command is restricted
