@@ -1,4 +1,4 @@
-import subprocess, os, re, sys
+import subprocess, os, re, sys, stat
 test_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(test_path)
 
@@ -316,6 +316,7 @@ def task_4_1_11(fixbug=False):
 
 	if (ubuntu == '32'):
 		if (re.search(check_32_line_1, check) and re.search(check_32_line_2, check) and re.search(check_32_line_1, check2) and re.search(check_32_line_2, check2)):
+			return True
 		else:
 			if (fixbug == True):
 				helper.replaceLine(filePath, check_32_line_1, check_32_line_1)
@@ -325,6 +326,7 @@ def task_4_1_11(fixbug=False):
 			return False
 	elif (ubuntu == '64'):
 		if (re.search(check_32_line_1, check) and re.search(check_32_line_2, check) and re.search(check_32_line_1, check2) and re.search(check_32_line_2, check2) and re.search(check_64_line_1, check) and re.search(check_64_line_2, check) and re.search(check_64_line_1, check2) and re.search(check_64_line_2, check2)):
+			return True
 		else:
 			if (fixbug == True):
 				helper.replaceLine(filePath, check_32_line_1, check_32_line_1)
@@ -425,7 +427,62 @@ def task_4_1_15(fixbug=False):
 		return False
 
 # 4.1.16 Ensure system administrator actions (sudolog) are collected
+def task_4_1_16(fixbug=False):
+	check = os.popen('grep actions /etc/audit/audit.rules').read()
+	check2 = os.popen('auditctl -l | grep actions').read()
+
+	line_1 = '-w /var/log/sudo.log -p wa -k actions'
+	filePath = '/etc/audit/audit.rules'
+
+	if (re.search(line_1, check) and re.search(line_1, check2)):
+		return True
+	else:
+		if (fixbug == True):
+			helper.replaceLine(filePath, line_1, line_1)
+			os.popen("systemctl reload auditd")
+
+		return False
+
 # 4.1.17 Ensure kernel module loading and unloading is collected
+def task_4_1_17(fixbug=False):
+	ubuntu, after = os.popen('getconf LONG_BIT').read().split('\n')
+	filePath = '/etc/audit/audit.rules'
+
+	check = os.popen('grep modules /etc/audit/audit.rules').read()
+	check2 = os.popen('auditctl -l | grep modules').read()
+
+	check_line_1 ='-w /sbin/insmod -p x -k modules'
+	check_line_2 ='-w /sbin/rmmod -p x -k modules'
+	check_line_3 ='-w /sbin/modprobe -p x -k modules'
+
+	check_32_line = '-a always,exit -F arch=b32 -S init_module -S delete_module -k modules'
+	check_64_line = '-a always,exit -F arch=b64 -S init_module -S delete_module -k modules'
+
+	if (ubuntu == '32'):
+		if (re.search(check_line_1, check) and re.search(check_line_2, check) and re.search(check_line_3, check) and re.search(check_line_1, check2) and re.search(check_line_2, check2) and re.search(check_line_3, check2) and re.search(check_32_line, check) and re.search(check_32_line, check2)):
+			return True
+		else:
+			if (fixbug == True):
+				helper.replaceLine(filePath, check_line_1, check_line_1)
+				helper.replaceLine(filePath, check_line_2, check_line_2)
+				helper.replaceLine(filePath, check_line_3, check_line_3)
+				helper.replaceLine(filePath, check_32_line, check_32_line)
+				os.popen("systemctl reload auditd")
+
+			return False
+	elif (ubuntu == '64'):
+		if (re.search(check_line_1, check) and re.search(check_line_2, check) and re.search(check_line_3, check) and re.search(check_line_1, check2) and re.search(check_line_2, check2) and re.search(check_line_3, check2) and re.search(check_64_line, check) and re.search(check_64_line, check2)):
+			return True
+		else:
+			if (fixbug == True):
+				helper.replaceLine(filePath, check_line_1, check_line_1)
+				helper.replaceLine(filePath, check_line_2, check_line_2)
+				helper.replaceLine(filePath, check_line_3, check_line_3)
+				helper.replaceLine(filePath, check_64_line, check_64_line)
+				os.popen("systemctl reload auditd")
+
+			return False
+	return True
 
 # 4.1.18 Ensure the audit configuration is immutable
 def task_4_1_18(fixbug=False):
@@ -452,6 +509,26 @@ def task_4_2_1_1(fixbug=False):
 
 def fix_4_2_1_1():
 	os.popen("systemctl enable rsyslog")
+
+# 4.2.1.3 Ensure rsyslog default file permissions configured
+def task_4_2_1_3(fixbug=False):
+	check = os.popen("grep ^\$FileCreateMode /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
+
+	if (re.search('\$FileCreateMode 0640', check)):
+		return True
+	if(fixbug == True): fix_4_2_1_3()			
+	return False
+
+def fix_4_2_1_3():
+	helper.replaceLine('/etc/rsyslog.conf', '^\$FileCreateMode', '$FileCreateMode 0640')
+
+# 4.2.1.4 Ensure rsyslog is configured to send logs to a remote log host
+def task_4_2_1_4(fixbug=False):
+	check = os.popen('grep "^*.*[^I][^I]*@" /etc/rsyslog.conf /etc/rsyslog.d/*.conf').read()
+
+	if (check != ''):
+		return True
+	return False
 
 # 4.2.1.5 Ensure remote rsyslog messages are only accepted on designated log hosts
 def task_4_2_1_5(fixbug=False):
@@ -510,7 +587,18 @@ def fix_4_2_3():
 
 # 4.2.4 Ensure permissions on all logfiles are configured
 def task_4_2_4(fixbug=False):
-	check = os.popen("find /var/log -type f -ls").read()
+	permissions = subprocess.Popen('find /var/log -type f -ls', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	for line in permissions.stdout.readlines():
+		line, after = line.split('\n')
+		permission = re.split('([rwx-]+)', line)[1]
+		if (permission[4 : None] != 'r-----'):
+			if (fixbug == True): fix_4_2_4()
+
+			return False
+
+	return True
 
 def fix_4_2_4():
 	os.popen("chmod -R g-wx,o-rwx /var/log/*")
+
+# 4.3 Ensure logrotate is configured
