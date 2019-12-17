@@ -5,10 +5,6 @@ sys.path.append(test_path)
 
 import helper as helper
 
-#p = subprocess.Popen('modprobe -n -v cramfs', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	#for line in p.stdout.readlines():
-    #	print line,
-
 # 1 setting up
 # 1.1 filesystem configuration
 # 1.1.1 disable unused filesystems
@@ -148,7 +144,7 @@ def task_1_1_5(fixbug=False):
 
 		if (re.search("/var", exists_tmp)):
 			return True
-		# mkdir_var()
+		# show guide
 		return False
 	except OSError:
 		return False
@@ -160,7 +156,7 @@ def task_1_1_6(fixbug=False):
 
 		if (re.search("/var/tmp", exists_var_tmp)):
 			return True
-		# mkdir /var/tmp
+		# show guide
 		return False
 	except OSError:
 		return False
@@ -219,7 +215,7 @@ def task_1_1_11(fixbug=False):
 		exists_var_log_audit = os.popen("ls -ld /var/log/audit").read()
 		if (re.search("/var/log/audit", exists_var_log_audit)):
 			return True
-		# mkdir /var/log/audit
+		# show guide
 		return False
 	except OSError:
 		return False
@@ -231,6 +227,7 @@ def task_1_1_12(fixbug=False):
 
 		if (re.search("/home", exists_var_log_audit)):
 			return True
+		# show guide
 		return False
 	except OSError:
 		return False
@@ -344,7 +341,7 @@ def task_1_1_21(fixbug=False):
 def fix_1_1_21():
 	os.popen("systemctl disable autofs")
 
-# 1.2 Configure Software Updates
+# 1.2 Configure Software Updates (not scored)
 
 # 1.3 Filesystem Integrity Checking
 # 1.3.1 Ensure AIDE is installed
@@ -391,17 +388,26 @@ def fix_1_4_1():
 	os.popen("chmod og-rwx /boot/grub/grub.cfg")
 
 # 1.4.2 Ensure bootloader password is set
+def task_1_4_2(fixbug=False):
+	check = os.popen('grep "^set superusers" /boot/grub/grub.cfg').read()
+	check2 = os.popen('grep "^password" /boot/grub/grub.cfg').read()
+
+	if (re.search('set superusers=', check) and re.search('password_pbkdf2', check2)):
+		return True
+	# show huong dan tren giao dien
+	return False
+
 # 1.4.3 Ensure authentication required for single user mode
-# def task_1_4_3(fixbug=False):
-# 	command = os.popen("grep ^root:[*\!]: /etc/shadow").read()
+def task_1_4_3(fixbug=False):
+	command = os.popen("grep ^root:[*\!]: /etc/shadow").read()
 
-# 	if (command == ''):
-# 		return True
-# 	if (fixbug == True): fix_1_4_3()
-# 	return False
+	if (command == ''):
+		return True
+	# show huong dan tren giao dien
+	return False
 
-# def fix_1_4_3():
-# 	os.popen("passwd root")
+def fix_1_4_3():
+	os.popen("passwd root")
 
 # 1.5 Additional Process Hardening
 # 1.5.1 Ensure core dumps are restricted
@@ -495,6 +501,7 @@ def task_1_6_1_4(fixbug=False):
 	
 	if (command == ''):
 		return True
+	# show guide
 	return False
 
 # 1.6.2 Configure AppArmor

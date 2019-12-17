@@ -396,8 +396,11 @@ def task_5_4_2(fixbug=False):
 
 	if (check == '' and check2 == ''):
 		return True
-	#if(fixbug == True): fix_5_4_2()
+	if(fixbug == True): fix_5_4_2()
 	return False
+
+def fix_5_4_2():
+	os.popen("scripts/script_fix_5_4_2")
 
 # 5.4.3 Ensure default group for the root account is GID 0
 def task_5_4_3(fixbug=False):
@@ -439,15 +442,3 @@ def fix_5_4_5():
 
 # 5.5 Ensure root login is restricted to system console
 # 5.6 Ensure access to the su command is restricted
-def task_5_6(fixbug=False):
-	check = os.popen('grep pam_wheel.so /etc/pam.d/su').read()
-	check2 = os.popen('grep sudo /etc/group').read()
-
-	if (check == 'auth required pam_wheel.so' and check2 == 'sudo:x:10:root,<user list>'):
-		return True
-	if(fixbug == True): fix_5_6()
-	return False
-
-def fix_5_6():
-	helper.replaceLine('/etc/pam.d/su', 'pam_wheel.so', 'auth required pam_wheel.so')
-	helper.replaceLine('/etc/group', 'sudo', 'sudo:x:10:root,<user list>')

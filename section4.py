@@ -8,6 +8,14 @@ import helper as helper
 # 4.1 Configure System Accounting (auditd)
 # 4.1.1 Configure Data Retention
 # 4.1.1.1 Ensure audit log storage size is configured
+def task_4_1_1_1(fixbug=False):
+	check = os.popen('max_log_file =').read()
+
+	if (re.search('max_log_file =', check)):
+		return True
+	# show guide
+	return False
+
 # 4.1.1.2 Ensure system is disabled when audit logs are full
 def task_4_1_1_2(fixbug=False):
 	check = os.popen('grep space_left_action /etc/audit/auditd.conf').read()
@@ -528,6 +536,7 @@ def task_4_2_1_4(fixbug=False):
 
 	if (check != ''):
 		return True
+	# show guide
 	return False
 
 # 4.2.1.5 Ensure remote rsyslog messages are only accepted on designated log hosts
@@ -537,14 +546,8 @@ def task_4_2_1_5(fixbug=False):
 
 	if (check == '$ModLoad imtcp' and check2 == '$InputTCPServerRun 514'):
 		return True
-	if(fixbug == True): fix_4_2_1_5()			
+	# show guide			
 	return False
-
-def fix_4_2_1_5():
-	helper.replaceLine('/etc/rsyslog.conf', '$ModLoad', '$ModLoad imtcp')
-	helper.replaceLine('/etc/rsyslog.conf', '$InputTCPServerRun', '$InputTCPServerRun 514')
-	# fix
-	os.popen("pkill -HUP rsyslogd")
 
 # 4.2.2 Configure syslog-ng
 # 4.2.2.1 Ensure syslog-ng service is enabled
