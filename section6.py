@@ -206,129 +206,129 @@ def task_6_2_5(fixbug=False):
 
 # 6.2.6 Ensure root PATH Integrity
 def task_6_2_6(fixbug=False):
-	check = os.popen('scripts/script_6_2_6').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_6", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.7 Ensure all users' home directories exist
 def task_6_2_7(fixbug=False):
-	check = os.popen('scripts/script_6_2_7').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_7", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.8 Ensure users' home directories permissions are 750 or more restrictive
 def task_6_2_8(fixbug=False):
-	check = os.popen('scripts/script_6_2_8').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_8", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.9 Ensure users own their home directories
 def task_6_2_9(fixbug=False):
-	check = os.popen('scripts/script_6_2_9').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_9", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.10 Ensure users' dot files are not group or world writable
 def task_6_2_10(fixbug=False):
-	check = os.popen('scripts/script_6_2_10').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_10", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.11 Ensure no users have .forward files
 def task_6_2_11(fixbug=False):
-	check = os.popen('scripts/script_6_2_11').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_11", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.12 Ensure no users have .netrc files
 def task_6_2_12(fixbug=False):
-	check = os.popen('scripts/script_6_2_12').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_12", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.13 Ensure users' .netrc Files are not group or world accessible
 def task_6_2_13(fixbug=False):
-	check = os.popen('scripts/script_6_2_13').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_13", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.14 Ensure no users have .rhosts files
 def task_6_2_14(fixbug=False):
-	check = os.popen('scripts/script_6_2_14').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_14", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.15 Ensure all groups in /etc/passwd exist in /etc/group
 def task_6_2_15(fixbug=False):
-	check = os.popen('scripts/script_6_2_15').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_15", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.16 Ensure no duplicate UIDs exist
 def task_6_2_16(fixbug=False):
-	check = os.popen('scripts/script_6_2_16').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_16", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.17 Ensure no duplicate GIDs exist
 def task_6_2_17(fixbug=False):
-	check = os.popen('scripts/script_6_2_17').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_17", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.18 Ensure no duplicate user names exist
 def task_6_2_18(fixbug=False):
-	check = os.popen('scripts/script_6_2_18').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_18", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.19 Ensure no duplicate group names exist
 def task_6_2_19(fixbug=False):
-	check = os.popen('scripts/script_6_2_19').read()
+	check = subprocess.Popen(test_path + "/scripts/script_6_2_19", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (check == ''):
-		return True
-	else:
-		return False
+	for line in check.stdout.readlines():
+		if (line != ''):
+			return False
+	return True
 
 # 6.2.20 Ensure shadow group is empty
 def task_6_2_20(fixbug=False):

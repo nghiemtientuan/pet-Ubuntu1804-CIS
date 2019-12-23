@@ -406,7 +406,7 @@ def task_5_4_2(fixbug=False):
 	return False
 
 def fix_5_4_2():
-	os.popen("scripts/script_fix_5_4_2")
+	subprocess.Popen(test_path + "/scripts/script_fix_5_4_2", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 # 5.4.3 Ensure default group for the root account is GID 0
 def task_5_4_3(fixbug=False):
