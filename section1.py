@@ -204,7 +204,7 @@ def task_1_1_10(fixbug=False):
 
 		if (re.search("/var/log", exists_var_log)):
 			return True
-		# mkdir /var/log
+		# show guide
 		return False
 	except OSError:
 		return False
@@ -290,7 +290,6 @@ def task_1_1_17(fixbug=False):
 
 		return False
 
-
 	return True
 
 # 1.1.18 Ensure nosuid option set on removable media partitions
@@ -302,7 +301,6 @@ def task_1_1_18(fixbug=False):
 
 		return False
 
-
 	return True
 
 # 1.1.19 Ensure noexec option set on removable media partitions
@@ -313,7 +311,6 @@ def task_1_1_19(fixbug=False):
 			helper.mountOptionSet('noexec')
 
 		return False
-
 
 	return True
 
@@ -457,13 +454,23 @@ def fix_1_5_4():
 
 # 1.6 Mandatory Access Control
 # 1.6.1 Configure SELinux
+def check_install_selinux():
+	command = os.popen('dpkg -s selinux').read()
+
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", command)):
+		return True
+	return False
+
 # 1.6.1.1 Ensure SELinux is not disabled in bootloader configuration
 def task_1_6_1_1(fixbug=False):
-	command = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
+	if (check_install_selinux()):
+		command = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
 
-	if (re.search("selinux[\s]+=[\s]+0", command) and re.search("enforcing[\s]+=[\s]+0", command)):
-		if (fixbug == True): fix_1_6_1_1()
-		return False
+		if (re.search("selinux=0", command) and re.search("enforcing=0", command)):
+			if (fixbug == True): fix_1_6_1_1()
+
+			return False
+		return True
 	return True
 
 def fix_1_6_1_1():
@@ -473,45 +480,61 @@ def fix_1_6_1_1():
 
 # 1.6.1.2 Ensure the SELinux state is enforcing
 def task_1_6_1_2(fixbug=False):
-	command = os.popen('grep SELINUX=enforcing /etc/selinux/config').read()
+	if (check_install_selinux()):
+		command = os.popen('grep SELINUX=enforcing /etc/selinux/config').read()
 
-	if (re.search("SELINUX=enforcing", command)):
-		return True
-	if (fixbug == True): fix_1_6_1_2()
-	return False
+		if (re.search("SELINUX=enforcing", command)):
+			return True
+		if (fixbug == True): fix_1_6_1_2()
+
+		return False
+	return True
 
 def fix_1_6_1_2():
 	helper.replaceLine('/etc/selinux/config', 'SELINUX=', 'SELINUX=enforcing')
 
 # 1.6.1.3 Ensure SELinux policy is configured
 def task_1_6_1_3(fixbug=False):
-	command = os.popen('grep SELINUXTYPE= /etc/selinux/config').read()
+	if (check_install_selinux()):
+		command = os.popen('grep SELINUXTYPE= /etc/selinux/config').read()
 
-	if (re.search("SELINUXTYPE=ubuntu", command) or re.search("SELINUXTYPE=default", command) or re.search("SELINUXTYPE=mls", command)):
-		return True
-	if (fixbug == True): fix_1_6_1_3()
-	return False
+		if (re.search("SELINUXTYPE=ubuntu", command) or re.search("SELINUXTYPE=default", command) or re.search("SELINUXTYPE=mls", command)):
+			return True
+		if (fixbug == True): fix_1_6_1_3()
+		return False
+	return True
 
 def fix_1_6_1_3():
 	helper.replaceLine('/etc/selinux/config', 'SELINUXTYPE=', 'SELINUXTYPE=ubuntu')
 
 # 1.6.1.4 Ensure no unconfined daemons exist
 def task_1_6_1_4(fixbug=False):
-	command = os.popen('ps -eZ | egrep "initrc" | egrep -vw "tr|ps|egrep|bash|awk" | tr \':\' \' \' | awk \'{ print $NF }\'').read()
-	
-	if (command == ''):
-		return True
-	# show guide
-	return False
+	if (check_install_selinux()):
+		command = os.popen('ps -eZ | egrep "initrc" | egrep -vw "tr|ps|egrep|bash|awk" | tr \':\' \' \' | awk \'{ print $NF }\'').read()
+		
+		if (command == ''):
+			return True
+		# show guide
+		return False
+	return True
 
 # 1.6.2 Configure AppArmor
+def check_install_apparmor():
+	command = os.popen('dpkg -s apparmor').read()
+
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", command)):
+		return True
+	return False
+
 # 1.6.2.1 Ensure AppArmor is not disabled in bootloader configuration
 def task_1_6_2_1(fixbug=False):
-	command = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
+	if (check_install_apparmor()):
+		command = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
 
-	if (re.search("apparmor=0", command) and re.search("enforcing[\s]+=[\s]+0", command)):
-		if (fixbug == True): fix_1_6_2_1()
-		return False
+		if (re.search("apparmor=0", command) and re.search("enforcing=0", command)):
+			if (fixbug == True): fix_1_6_2_1()
+			return False
+		return True
 	return True
 
 def fix_1_6_2_1():
@@ -521,12 +544,14 @@ def fix_1_6_2_1():
 
 # 1.6.2.2 Ensure all AppArmor Profiles are enforcing
 def task_1_6_2_2(fixbug=False):
-	command = os.popen('apparmor_status').read()
+	if (check_install_apparmor()):
+		command = os.popen('apparmor_status').read()
 
-	if (re.search("0 profiles are in complain mode", command) and re.search("0 processes are unconfined", command)):
-		return True
-	if (fixbug == True): fix_1_6_2_2()
-	return False
+		if (re.search("0 profiles are in complain mode", command) and re.search("0 processes are unconfined", command)):
+			return True
+		if (fixbug == True): fix_1_6_2_2()
+		return False
+	return True
 
 def fix_1_6_2_2():
 	os.popen("aa-enforce /etc/apparmor.d/*")
@@ -536,13 +561,12 @@ def task_1_6_3(fixbug=False):
 	dpkg_selinux = os.popen("dpkg -s selinux").read()
 	dpkg_apparmor = os.popen("dpkg -s apparmor").read()
 
-	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_selinux) and re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_apparmor)):
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_selinux) or re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_apparmor)):
 		return True
 	if (fixbug == True): fix_1_6_3()
 	return False
 
 def fix_1_6_3():
-	os.popen("apt-get install selinux -y")
 	os.popen("apt-get install apparmor -y")
 
 # 1.7 Warning Banners

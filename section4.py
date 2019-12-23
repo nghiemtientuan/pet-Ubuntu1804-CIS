@@ -58,12 +58,16 @@ def fix_4_1_2():
 
 # 4.1.3 Ensure auditing for processes that start prior to auditd is enabled
 def task_4_1_3(fixbug=False):
-	check = os.popen('grep "^\s*linux" /boot/grub/grub.cfg').read()
+	uuid, after = os.popen('findmnt / -o UUID -n').read().split('\n')
+	check_grep = subprocess.Popen('grep "^\s*linux" /boot/grub/grub.cfg', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-	if (re.search("audit=1", check)):
-		return True
-	if (fixbug == True): fix_4_1_3()
-	return False
+	for line in check_grep.stdout.readlines():
+		if (uuid in line and not re.search("audit=1", line)):
+			if (fixbug == True): fix_4_1_3()
+
+			return False
+
+	return True
 
 def fix_4_1_3():
 	helper.replaceLine('/etc/default/grub', '"^\s*linux"', 'GRUB_CMDLINE_LINUX="audit=1"')
@@ -506,70 +510,96 @@ def fix_4_1_18():
 
 # 4.2 Configure Logging
 # 4.2.1 Configure rsyslog
+def check_install_rsyslog():
+	dpkg = os.popen("dpkg -s rsyslog").read()
+
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg)):
+		return True
+	return False
+
 # 4.2.1.1 Ensure rsyslog Service is enabled
 def task_4_2_1_1(fixbug=False):
-	check = os.popen("systemctl is-enabled rsyslog").read()
+	if (check_install_rsyslog()):
+		check = os.popen("systemctl is-enabled rsyslog").read()
 
-	if (check == 'enabled'):
-		return True
-	if(fixbug == True): fix_4_2_1_1()			
-	return False
+		if (check == 'enabled'):
+			return True
+		if(fixbug == True): fix_4_2_1_1()			
+		return False
+	return True
 
 def fix_4_2_1_1():
 	os.popen("systemctl enable rsyslog")
 
 # 4.2.1.3 Ensure rsyslog default file permissions configured
 def task_4_2_1_3(fixbug=False):
-	check = os.popen("grep ^\$FileCreateMode /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
+	if (check_install_rsyslog()):
+		check = os.popen("grep ^\$FileCreateMode /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
 
-	if (re.search('\$FileCreateMode 0640', check)):
-		return True
-	if(fixbug == True): fix_4_2_1_3()			
-	return False
+		if (re.search('\$FileCreateMode 0640', check)):
+			return True
+		if(fixbug == True): fix_4_2_1_3()			
+		return False
+	return True
 
 def fix_4_2_1_3():
 	helper.replaceLine('/etc/rsyslog.conf', '^\$FileCreateMode', '$FileCreateMode 0640')
 
 # 4.2.1.4 Ensure rsyslog is configured to send logs to a remote log host
 def task_4_2_1_4(fixbug=False):
-	check = os.popen('grep "^*.*[^I][^I]*@" /etc/rsyslog.conf /etc/rsyslog.d/*.conf').read()
+	if (check_install_rsyslog()):
+		check = os.popen('grep "^*.*[^I][^I]*@" /etc/rsyslog.conf /etc/rsyslog.d/*.conf').read()
 
-	if (check != ''):
-		return True
-	# show guide
-	return False
+		if (check != ''):
+			return True
+		# show guide
+		return False
+	return True
 
 # 4.2.1.5 Ensure remote rsyslog messages are only accepted on designated log hosts
 def task_4_2_1_5(fixbug=False):
-	check = os.popen("grep '$ModLoad imtcp' /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
-	check2 = os.popen("grep '$InputTCPServerRun' /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
+	if (check_install_rsyslog()):
+		check = os.popen("grep '$ModLoad imtcp' /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
+		check2 = os.popen("grep '$InputTCPServerRun' /etc/rsyslog.conf /etc/rsyslog.d/*.conf").read()
 
-	if (check == '$ModLoad imtcp' and check2 == '$InputTCPServerRun 514'):
-		return True
-	# show guide			
-	return False
+		if (check == '$ModLoad imtcp' and check2 == '$InputTCPServerRun 514'):
+			return True
+		# show guide
+		return False
+	return True
 
 # 4.2.2 Configure syslog-ng
+def check_install_syslogng():
+	dpkg = os.popen("dpkg -s syslog-ng").read()
+
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg)):
+		return True
+	return False
+
 # 4.2.2.1 Ensure syslog-ng service is enabled
 def task_4_2_2_1(fixbug=False):
-	check = os.popen("systemctl is-enabled syslog-ng").read()
+	if (check_install_syslogng()):
+		check = os.popen("systemctl is-enabled syslog-ng").read()
 
-	if (check == 'enabled'):
-		return True
-	if(fixbug == True): fix_4_2_2_1()			
-	return False
+		if (check == 'enabled'):
+			return True
+		if(fixbug == True): fix_4_2_2_1()			
+		return False
+	return True
 
 def fix_4_2_2_1():
 	os.popen("update-rc.d syslog-ng enable")
 
 # 4.2.2.3 Ensure syslog-ng default file permissions configured
 def task_4_2_2_3(fixbug=False):
-	check = os.popen("grep ^options /etc/syslog-ng/syslog-ng.conf").read()
+	if (check_install_syslogng()):
+		check = os.popen("grep ^options /etc/syslog-ng/syslog-ng.conf").read()
 
-	if (check == 'options { chain_hostnames(off); flush_lines(0); perm(0640); stats_freq(3600); hreaded(yes); };'):
-		return True
-	if(fixbug == True): fix_4_2_2_3()			
-	return False
+		if (check == 'options { chain_hostnames(off); flush_lines(0); perm(0640); stats_freq(3600); hreaded(yes); };'):
+			return True
+		if(fixbug == True): fix_4_2_2_3()			
+		return False
+	return True
 
 def fix_4_2_2_3():
 	helper.replaceLine('/etc/rsyslog.conf', '^options', 'options { chain_hostnames(off); flush_lines(0); perm(0640); stats_freq(3600); threaded(yes); };')
@@ -579,14 +609,13 @@ def task_4_2_3(fixbug=False):
 	dpkg_rsyslog = os.popen("dpkg -s rsyslog").read()
 	dpkg_syslog = os.popen("dpkg -s syslog-ng").read()
 
-	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_rsyslog) and re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_syslog)):
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_rsyslog) or re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_syslog)):
 		return True
 	if (fixbug == True): fix_4_2_3()
 	return False
 
 def fix_4_2_3():
 	os.popen("apt-get install rsyslog -y")
-	os.popen("apt-get install syslog-ng -y")
 
 # 4.2.4 Ensure permissions on all logfiles are configured
 def task_4_2_4(fixbug=False):
