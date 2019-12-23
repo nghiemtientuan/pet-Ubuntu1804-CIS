@@ -150,25 +150,38 @@ def task_2_2_1_1(fixbug=False):
 	dpkg_ntp = os.popen("dpkg -s ntp").read()
 	dpkg_chrony = os.popen("dpkg -s chrony").read()
 
-	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_ntp) and re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_chrony)):
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_ntp) or re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_chrony)):
 		return True
 	if (fixbug == True): fix_2_2_1_1()
 	return False
 
 def fix_2_2_1_1():
-	os.popen("apt-get install ntp -y")
 	os.popen("apt-get install chrony -y")
+
+def check_install_ntp():
+	dpkg_ntp = os.popen("dpkg -s ntp").read()
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_ntp)):
+		return True
+	return False
+
+def check_install_chrony():
+	dpkg_chrony = os.popen("dpkg -s chrony").read()
+	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg_chrony)):
+		return True
+	return False
 
 # 2.2.1.2 Ensure ntp is configured
 def task_2_2_1_2(fixbug=False):
-	check = os.popen('grep "^restrict" /etc/ntp.conf').read()
-	check_egrep = os.popen('egrep "^(server|pool)" /etc/ntp.conf').read()
-	check_grep = os.popen('grep "RUNASUSER=ntp" /etc/init.d/ntp').read()
+	if (check_install_ntp()):
+		check = os.popen('grep "^restrict" /etc/ntp.conf').read()
+		check_egrep = os.popen('egrep "^(server|pool)" /etc/ntp.conf').read()
+		check_grep = os.popen('grep "RUNASUSER=ntp" /etc/init.d/ntp').read()
 
-	if (re.search("restrict -4 default kod nomodify notrap nopeer noquery", check) and re.search("restrict -6 default kod nomodify notrap nopeer noquery", check) and re.search("RUNASUSER=ntp", check_grep) and not (check_egrep == '')):
-		return True
-	if (fixbug == True): fix_2_2_1_2()
-	return False
+		if (re.search("restrict -4 default kod nomodify notrap nopeer noquery", check) and re.search("restrict -6 default kod nomodify notrap nopeer noquery", check) and re.search("RUNASUSER=ntp", check_grep) and not (check_egrep == '')):
+			return True
+		if (fixbug == True): fix_2_2_1_2()
+		return False
+	return True
 
 def fix_2_2_1_2():
 	helper.replaceLine('/etc/ntp.conf', '^restrict -4', 'restrict -4 default kod nomodify notrap nopeer noquery')
@@ -186,9 +199,7 @@ def fix_2_2_1_2():
 
 # 2.2.1.3 Ensure chrony is configured
 def task_2_2_1_3(fixbug=False):
-	dpkg = os.popen("dpkg -s chrony").read()
-
-	if (re.search("Status[a-zA-Z\s:]+install[a-zA-Z\s]+ok[a-zA-Z\s]+installed", dpkg)):
+	if (check_install_chrony()):
 		check_grep = os.popen('grep "^(server|pool)" /etc/chrony/chrony.conf').read()
 
 		if (not (check_grep == '')):

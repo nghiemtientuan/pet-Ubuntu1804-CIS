@@ -23,7 +23,7 @@ def fix_6_1_2():
 def task_6_1_3(fixbug=False):
 	stat = os.popen("stat /etc/shadow").read()
 
-	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+42/[\s]+shadow\)", stat)):
+	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+[0-9]+/[\s]+shadow\)", stat)):
 		return True
 	if(fixbug == True): fix_6_1_3()
 	return False
@@ -49,7 +49,7 @@ def fix_6_1_4():
 def task_6_1_5(fixbug=False):
 	stat = os.popen("stat /etc/gshadow").read()
 
-	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+42/[\s]+shadow\)", stat)):
+	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+[0-9]+/[\s]+shadow\)", stat)):
 		return True
 	if(fixbug == True): fix_6_1_5()
 	return False
@@ -75,7 +75,7 @@ def fix_6_1_6():
 def task_6_1_7(fixbug=False):
 	stat = os.popen("stat /etc/shadow-").read()
 
-	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+42/[\s]+shadow\)", stat)):
+	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+[0-9]+/[\s]+shadow\)", stat)):
 		return True
 	if(fixbug == True): fix_6_1_7()
 	return False
@@ -101,7 +101,7 @@ def fix_6_1_8():
 def task_6_1_9(fixbug=False):
 	stat = os.popen("stat /etc/gshadow-").read()
 
-	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+42/[\s]+shadow\)", stat)):
+	if (re.search("Access:[\s]+\(0640/-rw-r-----\)[\s]+Uid: \([\s]+0/[\s]+root\)[\s]+Gid:[\s]+\([\s]+[0-9]+/[\s]+shadow\)", stat)):
 		return True
 	if(fixbug == True): fix_6_1_9()
 	return False
