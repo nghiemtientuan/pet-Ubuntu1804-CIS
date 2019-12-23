@@ -72,6 +72,8 @@ def checkDisableServiceInFile(filePath, serviceName):
 
 
 def checkDisableServiceInFolder(folderPath, serviceName):
+	if (not os.path.exists(folderPath)):
+		os.mkdir(folderPath);
 	for file in os.listdir(folderPath):
 		if (serviceName in file):
 			filePath = folderPath + '/' + file
